@@ -1150,6 +1150,9 @@ public extension CMAcceleration {
 public extension Bundle {
     
     class func cameraBundle() -> Bundle {
+//        let assetPath = Bundle(for: DKDefaultCameraResource.self).resourcePath!
+//        return Bundle(path: (assetPath as NSString).appendingPathComponent("DKCameraResource.bundle"))!
+        
         #if SWIFT_PACKAGE
             return Bundle.module
         #else
@@ -1191,3 +1194,41 @@ open class DKDefaultCameraResource: DKCameraResource {
     
 }
 
+private class BundleFinder {}
+
+extension Foundation.Bundle {
+    /// Returns the resource bundle associated with the current Swift module.
+    static let module: Bundle = {
+        let bundleName = "DKCamera_DKCamera"
+
+        let overrides: [URL]
+        #if DEBUG
+        if let override = ProcessInfo.processInfo.environment["PACKAGE_RESOURCE_BUNDLE_URL"] {
+            overrides = [URL(fileURLWithPath: override)]
+        } else {
+            overrides = []
+        }
+        #else
+        overrides = []
+        #endif
+
+        let candidates = overrides + [
+            // Bundle should be present here when the package is linked into an App.
+            Bundle.main.resourceURL,
+
+            // Bundle should be present here when the package is linked into a framework.
+            Bundle(for: BundleFinder.self).resourceURL,
+
+            // For command-line tools.
+            Bundle.main.bundleURL,
+        ]
+
+        for candidate in candidates {
+            let bundlePath = candidate?.appendingPathComponent(bundleName + ".bundle")
+            if let bundle = bundlePath.flatMap(Bundle.init(url:)) {
+                return bundle
+            }
+        }
+        fatalError("unable to find bundle named DKImagePickerController_DKImagePickerController")
+    }()
+}
