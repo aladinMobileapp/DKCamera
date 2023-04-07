@@ -1166,9 +1166,8 @@ public extension Bundle {
 open class DKDefaultCameraResource: DKCameraResource {
     
     open func imageForResource(_ name: String) -> UIImage {
-        let bundle = Bundle.cameraBundle()
-        let imagePath = bundle.path(forResource: name, ofType: "png", inDirectory: "Images")
-        let image = UIImage(contentsOfFile: imagePath!)
+        let picture = Bundle.cameraBundle().path(forResource: name, ofType: "png")!
+        let image = UIImage(named: picture)
         return image!
     }
     
